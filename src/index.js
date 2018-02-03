@@ -1,12 +1,15 @@
+import io from 'socket.io-client'
 import database from './database'
 
-export const initializeApp = (config) => {
+function initializeApp (config) {
   const { serverURL } = config
+  this._socket = io(serverURL)
   return {
-    database: new database({ serverURL }),
+    database: () => new database(this._socket, serverURL),
+    socket: this._socket,
   }
 }
 
 export default {
-  initializeApp: initializeApp,
+  initializeApp: (config) => new initializeApp(config),
 }

@@ -9,14 +9,48 @@
     <script src="./dist/volcano-client.js"></script>
   </head>
   <body>
+    <div>
+      <button onclick="testOn()">Test `on`</button>
+      <button onclick="testSet1()">Test `set` update</button>
+      <button onclick="testSet2()">Test `set` create</button>
+    </div>
     <script>
       const config = {
-        serverURL: 'http://localhost:3030',
+        serverURL: 'http://localhost:2306',
       }
-      const app = volcano.initializeApp(config)
-      app.database.ref('comments/5a721b1c7909e2b9bf0e146f').once('value')
-        .then(result => console.log(result))
-        .catch(error => console.error(error))
+      const app = volcano.default.initializeApp(config)
+      const comments = []
+      const testOn = () => {
+        app.database().ref('comments/5a738755abe741e61a6295c5/author').on('value', (snapshot) => {
+          console.log(snapshot)
+          const data = snapshot.val()
+          comments.push(data)
+          console.log('------new comment------')
+          console.log(data)
+        })
+      }
+      const testSet1 = () => {
+        app.database().ref('comments/5a738755abe741e61a6295c5/author').set({ name: 'CK', gf: 'Catherine', hash: `${new Date().getTime()}` })
+          .then(data => {
+            console.log('-----set onComplete success----')
+            console.log(data)
+          })
+          .catch(error => {
+            console.log('-----set onComplete error-----')
+            console.error(error)
+          })
+      }
+      const testSet2 = () => {
+        app.database().ref('comments/5a738755abe741e61a6295d0/author').set({ name: 'Catherine', bf: 'CK' })
+          .then(data => {
+            console.log('-----set onComplete success----')
+            console.log(data)
+          })
+          .catch(error => {
+            console.log('-----set onComplete error-----')
+            console.error(error)
+          })
+      }
     </script>
   </body>
 </html>
