@@ -1,4 +1,5 @@
 import { arrayToObject } from './utils'
+import Snapshot from './models/Snapshot';
 
 const ROOT_SERVICE = 'd'
 
@@ -112,28 +113,34 @@ database.prototype.on = function (eventType, callback, cancelCallback, context) 
 
   let isInitialized = false
   let queueWhenIniting = []
-  const initializingEventName = `${ref}-on-${eventType}-initializing`
-  const initializedEventName = `${ref}-on-${eventType}-initialized`
-  const onEventName = `${ref}-on-${eventType}`
-  const initializingCB = function(snapshot) {
-    callback(snapshot)
+  const initingEvent = `${ref}-${eventType}-initing`
+  const initedEvent = `${ref}-${eventType}-inited`
+  const onEvent = `${ref}-${eventType}`
+  console.log(onEvent)
+  const initingCB = (snapshotData, successServerCallback) => {
+    console.log('---initing---')
+    callback(new Snapshot(snapshotData))
+    successServerCallback()
   }
-  const initializedCB = function() {
+  const initedCB = () => {
+    console.log('---inited---')
     isInitialized = true
     queueWhenIniting.forEach(snapshot => {callback(snapshot)})
-    this._socket.off(initializingEventName, initializingCB)
-    this._socket.off(initializedEventName, initializedCB)
+    this._socket.off(initingEvent, initingCB)
+    this._socket.off(initedEvent, initedCB)
   }
-  const onCB = function(snapshot) {
+  const onCB = (snapshotData) => {
+    console.log('---on value change---')
+    const snapshot = new Snapshot(snapshotData)
     if (!isInitialized) {
       queueWhenIniting.push(snapshot)
     } else {
       callback(snapshot)
     }
   }
-  this._socket.on(initializingEventName, initializingCB)
-  this._socket.on(initializedEventName, initializedCB)
-  this._socket.on(onEventName, onCB)
+  this._socket.on(initingEvent, initingCB)
+  this._socket.on(initedEvent, initedCB)
+  this._socket.on(onEvent, onCB)
 
   // this._socket.emit(REQUEST_METHOD.UPDATE, ROOT_SERVICE, null, {}, params, (error, result) => {
   //   if (error) {
@@ -156,9 +163,10 @@ database.prototype.set = function (data) {
     },
   }
   return new Promise((resolve, reject) => {
-    this._socket.emit('volcano-set', params, ({ updatedData, error }) => {
+    this._socket.emit('volcano-set', params, ({ updatedSnapshotData, error }) => {
       if (error) return reject(error)
-      return resolve(updatedData)
+      console.log()
+      return resolve(new Snapshot(updatedSnapshotData))
     })
   })
 }
