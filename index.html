@@ -14,6 +14,8 @@
       <button onclick="testOff()">Test `off`</button>
       <button onclick="testSet1()">Test `set` update</button>
       <button onclick="testSet2()">Test `set` create</button>
+      <button onclick="testUpdate()">Test `update`</button>
+      <button onclick="testPush()">Test `push`</button>
     </div>
     <script>
       const config = {
@@ -36,7 +38,7 @@
         handler((() => {console.log('off')}))
       }
       const testSet1 = () => {
-        app.database().ref('comments/5a738755abe741e61a6295c5/author').set({ name: 'CK', gf: 'Catherine', hash: `${new Date().getTime()}` })
+        app.database().ref('comments/5a738755abe741e61a6295c5/author').set({ name: 'CK', gf: 'Catherine', hash: `${new Date().getTime() }` })
           .then(snapshot => {
             console.log('-----set onComplete success----')
             console.log(snapshot)
@@ -50,12 +52,44 @@
       }
       const testSet2 = () => {
         app.database().ref('comments/5a738755abe741e61a6295d6/author').set({ name: 'Catherine', bf: 'CK' })
-          .then(data => {
+          .then(snapshot => {
             console.log('-----set onComplete success----')
-            console.log(data)
+            console.log(snapshot)
+            console.log(snapshot.val())
           })
           .catch(error => {
             console.log('-----set onComplete error-----')
+            console.error(error)
+          })
+      }
+      const testUpdate = () => {
+        app.database().ref('comments/5a738755abe741e61a6295d6/author').update({ updatedAt: `${new Date().getTime()}` })
+          .then(snapshot => {
+            console.log('-----update onComplete success----')
+            console.log(snapshot)
+            console.log(snapshot.val())
+          })
+          .catch(error => {
+            console.log('-----update onComplete error-----')
+            console.error(error)
+          })
+      }
+      const testPush = () => {
+        app.database().ref('comments/').push({
+          content: 'Push test',
+          author: { 
+            name: 'CK',
+            gf: 'Catherine',
+            hash: `${new Date().getTime()}`,
+          },
+        })
+          .then(snapshot => {
+            console.log('-----update onComplete success----')
+            console.log(snapshot)
+            console.log(snapshot.val())
+          })
+          .catch(error => {
+            console.log('-----update onComplete error-----')
             console.error(error)
           })
       }

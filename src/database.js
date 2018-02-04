@@ -1,5 +1,6 @@
 import { arrayToObject } from './utils'
-import Snapshot from './models/Snapshot';
+import Snapshot from './models/Snapshot'
+import ObjectId from 'bson-objectid'
 
 const ROOT_SERVICE = 'd'
 
@@ -94,23 +95,6 @@ database.prototype.toString = function () {
   return refString
 }
 
-database.prototype.once = function (eventType) {
-  return new Promise((resolve, reject) => {
-    const notReady = this._readyOrNot()
-    if (notReady) return reject(notReady)
-
-    const method = 'find'
-    const nodes = this._getRefNodes()
-    // TODO: get data of all collections
-    // if (nodes.length === 0)
-    const ref = nodes[0]
-    const params = this._getParams(nodes)
-    this._request(method, ref, params)
-      .then(snapshot => resolve(snapshot))
-      .catch(error => reject(error))
-  })
-}
-
 database.prototype.on = function (eventType, callback, cancelCallback, context) {
   context && callback.bind(context)
   const ref = this._nodes.join('/')
@@ -165,21 +149,62 @@ database.prototype.on = function (eventType, callback, cancelCallback, context) 
   }
 }
 
-database.prototype.set = function (data) {
+database.prototype.once = function (eventType) {
+  return new Promise((resolve, reject) => {
+    const notReady = this._readyOrNot()
+    if (notReady) return reject(notReady)
+
+    const method = 'find'
+    const nodes = this._getRefNodes()
+    // TODO: get data of all collections
+    // if (nodes.length === 0)
+    const ref = nodes[0]
+    const params = this._getParams(nodes)
+    this._request(method, ref, params)
+      .then(snapshot => resolve(snapshot))
+      .catch(error => reject(error))
+  })
+}
+
+database.prototype.push = function (value) {
+  this._nodes.push(ObjectId().toHexString())
+  if (!value) return this
+  return this.set(value)
+}
+
+database.prototype.set = function (value) {
   const ref = this._nodes.join('/')
   const params = {
     query: {
       ref,
-      data,
+      value,
+    },
+  }
+  console.log(params)
+  return new Promise((resolve, reject) => {
+    this._socket.emit('volcano-set', params, ({ updatedSnapshotData, error }) => {
+      if (error) return reject(error)
+      return resolve(new Snapshot(updatedSnapshotData))
+    })
+  })
+}
+
+database.prototype.update = function (value) {
+  const ref = this._nodes.join('/')
+  const params = {
+    query: {
+      ref,
+      value,
     },
   }
   return new Promise((resolve, reject) => {
-    this._socket.emit('volcano-set', params, ({ updatedSnapshotData, error }) => {
+    this._socket.emit('volcano-update', params, ({ updatedSnapshotData, error }) => {
       if (error) return reject(error)
       console.log()
       return resolve(new Snapshot(updatedSnapshotData))
     })
   })
 }
+
 
 export default database
