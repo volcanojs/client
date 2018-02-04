@@ -51,13 +51,23 @@ database.prototype._init = function (socket, serverURL) {
     // TODO
     return null
   }
-  this._request = (method, collection, params) => new Promise((resolve, reject) => {
-    this._socket.emit(method, `d/${collection}`, params, (error, result) => {
-      if (error) return reject(error)
-      const formattedResult = Array.isArray(result.data) ? arrayToObject(result.data) : result.data
-      return resolve(formattedResult)
-    })
-  })
+
+  this._socket_listeners = {}
+  this._socket_on = (eventType, callback) => {
+    if (!callback.name) throw new Error('Anonymous callback not allowed.')
+    const ref = this._nodes.join('/')
+    const room = `${ref}-${eventType}`
+    const key = `${this._socket.id}-${room}`
+    if (this._socket_listeners[key]) {
+      this._socket_room_data[key].push(callback)
+    } else {
+      this._socket_room_data[key] = [callback]
+    }
+    this._socket.on(room, callback)
+  }
+  this._socket_off = (eventType, callback) => {
+    if (!callback.name) throw new Error('Anonymous callback not allowed.')
+  }
 }
 
 database.prototype.ref = function (ref) {
@@ -102,6 +112,7 @@ database.prototype.once = function (eventType) {
 }
 
 database.prototype.on = function (eventType, callback, cancelCallback, context) {
+  context && callback.bind(context)
   const ref = this._nodes.join('/')
   const nodes = [...this._nodes]
   const params = {
@@ -117,10 +128,10 @@ database.prototype.on = function (eventType, callback, cancelCallback, context) 
   const initedEvent = `${ref}-${eventType}-inited`
   const onEvent = `${ref}-${eventType}`
   console.log(onEvent)
-  const initingCB = (snapshotData, successServerCallback) => {
+  const initingCB = (snapshotData, tellServerComplete) => {
     console.log('---initing---')
     callback(new Snapshot(snapshotData))
-    successServerCallback()
+    tellServerComplete()
   }
   const initedCB = () => {
     console.log('---inited---')
@@ -142,16 +153,16 @@ database.prototype.on = function (eventType, callback, cancelCallback, context) 
   this._socket.on(initedEvent, initedCB)
   this._socket.on(onEvent, onCB)
 
-  // this._socket.emit(REQUEST_METHOD.UPDATE, ROOT_SERVICE, null, {}, params, (error, result) => {
-  //   if (error) {
-  //     console.log(error)
-  //     throw new Error(error)
-  //   }
-  //   const formattedResult = Array.isArray(result.data) ? arrayToObject(result.data) : result.data
-  //   callback(formattedResult)
-  // })
-  console.log(params)
   this._socket.emit('volcano-on', params)
+
+  return (callback, context) => {
+    context && callback.bind(context)
+    this._socket.emit('volcano-off', { room: onEvent }, () => {
+      this._socket.off(onEvent, onCB)
+      console.log('---off', onEvent, '---')
+      callback()
+    })
+  }
 }
 
 database.prototype.set = function (data) {
