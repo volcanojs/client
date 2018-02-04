@@ -95,7 +95,8 @@ database.prototype.toString = function () {
   return refString
 }
 
-database.prototype.on = function (eventType, callback, cancelCallback, context) {
+database.prototype.on = function (eventType, callback, cancelCallback, context, isOnce = false, onceCompleteCallback) {
+  console.log('---on---')
   context && callback.bind(context)
   const ref = this._nodes.join('/')
   const nodes = [...this._nodes]
@@ -112,25 +113,47 @@ database.prototype.on = function (eventType, callback, cancelCallback, context) 
   const initedEvent = `${ref}-${eventType}-inited`
   const onEvent = `${ref}-${eventType}`
   console.log(onEvent)
-  const initingCB = (snapshotData, tellServerComplete) => {
+
+  let isOnceComplete = false
+  const invokeCallback = ({ snapshot, error }) => {
+    if (isOnce) {
+      console.log('---is once---')
+      if (!isOnceComplete) {
+        isOnceComplete = true
+        onceCompleteCallback({ snapshot, error })
+        console.log('---once complete---')
+      }
+    } else {
+      console.log('---is on---')
+      if (error) {
+        cancelCallback(error)
+      } else {
+        callback(snapshot)
+      }
+    }
+  }
+
+  const initingCB = ({ error, snapshotData }, tellServerComplete) => {
     console.log('---initing---')
-    callback(new Snapshot(snapshotData))
+    invokeCallback({ error, snapshot: new Snapshot(snapshotData) })
     tellServerComplete()
   }
   const initedCB = () => {
     console.log('---inited---')
     isInitialized = true
-    queueWhenIniting.forEach(snapshot => {callback(snapshot)})
+    queueWhenIniting.forEach(result => {
+      invokeCallback(result)
+    })
     this._socket.off(initingEvent, initingCB)
     this._socket.off(initedEvent, initedCB)
   }
-  const onCB = (snapshotData) => {
+  const onCB = ({ error, snapshotData }) => {
     console.log('---on value change---')
-    const snapshot = new Snapshot(snapshotData)
+    const result = { error, snapshot: new Snapshot(snapshotData) }
     if (!isInitialized) {
-      queueWhenIniting.push(snapshot)
+      queueWhenIniting.push(result)
     } else {
-      callback(snapshot)
+      invokeCallback(result)
     }
   }
   this._socket.on(initingEvent, initingCB)
@@ -144,25 +167,22 @@ database.prototype.on = function (eventType, callback, cancelCallback, context) 
     this._socket.emit('volcano-off', { room: onEvent }, () => {
       this._socket.off(onEvent, onCB)
       console.log('---off', onEvent, '---')
-      callback()
+      callback && callback()
     })
   }
 }
 
-database.prototype.once = function (eventType) {
+database.prototype.once = function (eventType, callback, cancelCallback, context) {
+  console.log('wfdfs')
+  const _this = this
   return new Promise((resolve, reject) => {
-    const notReady = this._readyOrNot()
-    if (notReady) return reject(notReady)
-
-    const method = 'find'
-    const nodes = this._getRefNodes()
-    // TODO: get data of all collections
-    // if (nodes.length === 0)
-    const ref = nodes[0]
-    const params = this._getParams(nodes)
-    this._request(method, ref, params)
-      .then(snapshot => resolve(snapshot))
-      .catch(error => reject(error))
+    console.log('ldjka')
+    let offHandler
+    offHandler = _this.on(eventType, callback, cancelCallback, context, true, ({ snapshot, error }) => {
+      offHandler()
+      if (error) return reject(error)
+      return resolve(snapshot)
+    })
   })
 }
 

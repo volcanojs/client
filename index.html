@@ -11,6 +11,7 @@
   <body>
     <div>
       <button onclick="testOn()">Test `on`</button>
+      <button onclick="testOnce()">Test `once`</button>
       <button onclick="testOff()">Test `off`</button>
       <button onclick="testSet1()">Test `set` update</button>
       <button onclick="testSet2()">Test `set` create</button>
@@ -33,6 +34,19 @@
           console.log(snapshot.val())
           console.log(snapshot.key)
         })
+      }
+      const testOnce = () => {
+        console.log('---once---')
+        app.database().ref('comments/5a738755abe741e61a6295c5').once('value')
+          .then(snapshot => {
+            console.log('------once value------')
+            console.log(snapshot)
+            const data = snapshot.val()
+            comments.push(data)
+            console.log(snapshot.val())
+            console.log(snapshot.key)
+          })
+          .catch(error => console.error(error))
       }
       const testOff = () => {
         handler((() => {console.log('off')}))
