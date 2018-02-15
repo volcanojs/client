@@ -26,7 +26,7 @@
       const comments = []
       let handler
       const testOn = () => {
-        handler = app.database().ref('comments/5a738755abe741e61a6295c5/author').on('value', (snapshot) => {
+        handler = app.database().ref('airline_10/country/wow').on('value', (snapshot) => {
           console.log('------on value------')
           console.log(snapshot)
           const data = snapshot.val()

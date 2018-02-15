@@ -2,7 +2,7 @@ import { arrayToObject } from './utils'
 import Snapshot from './models/Snapshot'
 import ObjectId from 'bson-objectid'
 
-const ROOT_SERVICE = 'd'
+const PROJECT = 'travel-sample'
 
 const REQUEST_METHOD = {
   FIND: 'find',
@@ -103,7 +103,8 @@ database.prototype.on = function (eventType, callback, cancelCallback, context, 
   const params = {
     eventType,
     query: {
-      ref,
+      ref: ref,
+      bucketName: PROJECT,
     },
   }
 
