@@ -108,11 +108,13 @@ database.prototype.on = function (eventType, callback, cancelCallback, context, 
     },
   }
 
+  const room = `${PROJECT}-${ref}-${eventType}`
+
   let isInitialized = false
   let queueWhenIniting = []
-  const initingEvent = `${ref}-${eventType}-initing`
-  const initedEvent = `${ref}-${eventType}-inited`
-  const onEvent = `${ref}-${eventType}`
+  const initingEvent = `${room}-initing`
+  const initedEvent = `${room}-inited`
+  const onEvent = `${room}`
   console.log(onEvent)
 
   let isOnceComplete = false
@@ -199,13 +201,13 @@ database.prototype.set = function (value) {
     query: {
       ref,
       value,
+      bucketName: PROJECT,
     },
   }
-  console.log(params)
   return new Promise((resolve, reject) => {
-    this._socket.emit('volcano-set', params, ({ updatedSnapshotData, error }) => {
+    this._socket.emit('volcano-set', params, (error) => {
       if (error) return reject(error)
-      return resolve(new Snapshot(updatedSnapshotData))
+      return resolve()
     })
   })
 }
