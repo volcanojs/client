@@ -1,4 +1,5 @@
 import on from './on'
+import once from './once'
 import set from './set'
 import update from './update'
 import push from './push'
@@ -31,6 +32,7 @@ class Database {
 
     // Bind APIs
     this.on = on.bind(this)
+    this.once = once.bind(this)
     this.set = set.bind(this)
     this.update = update.bind(this)
     this.push = push.bind(this)
