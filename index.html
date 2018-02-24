@@ -21,12 +21,13 @@
     <script>
       const config = {
         serverURL: 'http://localhost:2306',
+        bucketName: 'wildfire',
       }
       const app = volcano.default.initializeApp(config)
       const comments = []
       let handler
       const testOn = () => {
-        handler = app.database().ref('airline_10/country/wow').on('value', (snapshot) => {
+        handler = app.database().ref('comments').on('value', (snapshot) => {
           console.log('------on value------')
           console.log(snapshot)
           const data = snapshot.val()
@@ -53,11 +54,8 @@
       }
       const testSet1 = () => {
         app.database().ref('comments/5a738755abe741e61a6295c5/author').set({ name: 'CK', gf: 'Catherine', hash: `${new Date().getTime() }` })
-          .then(snapshot => {
+          .then(() => {
             console.log('-----set onComplete success----')
-            console.log(snapshot)
-            console.log(snapshot.val())
-            console.log(snapshot.key)
           })
           .catch(error => {
             console.log('-----set onComplete error-----')
@@ -66,10 +64,8 @@
       }
       const testSet2 = () => {
         app.database().ref('comments/5a738755abe741e61a6295d6/author').set({ name: 'Catherine', bf: 'CK' })
-          .then(snapshot => {
+          .then(() => {
             console.log('-----set onComplete success----')
-            console.log(snapshot)
-            console.log(snapshot.val())
           })
           .catch(error => {
             console.log('-----set onComplete error-----')
@@ -78,10 +74,8 @@
       }
       const testUpdate = () => {
         app.database().ref('comments/5a738755abe741e61a6295d6/author').update({ updatedAt: `${new Date().getTime()}` })
-          .then(snapshot => {
+          .then(() => {
             console.log('-----update onComplete success----')
-            console.log(snapshot)
-            console.log(snapshot.val())
           })
           .catch(error => {
             console.log('-----update onComplete error-----')
