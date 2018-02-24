@@ -91,13 +91,11 @@
             hash: `${new Date().getTime()}`,
           },
         })
-          .then(snapshot => {
-            console.log('-----update onComplete success----')
-            console.log(snapshot)
-            console.log(snapshot.val())
+          .then(() => {
+            console.log('-----push onComplete success----')
           })
           .catch(error => {
-            console.log('-----update onComplete error-----')
+            console.log('-----push onComplete error-----')
             console.error(error)
           })
       }

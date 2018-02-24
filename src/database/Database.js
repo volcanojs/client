@@ -1,6 +1,7 @@
 import on from './on'
 import set from './set'
 import update from './update'
+import push from './push'
 
 class Database {
   constructor ({ socket, serverURL, bucketName }) {
@@ -32,6 +33,7 @@ class Database {
     this.on = on.bind(this)
     this.set = set.bind(this)
     this.update = update.bind(this)
+    this.push = push.bind(this)
   }
 
   ref (ref) {
