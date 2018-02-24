@@ -17,6 +17,7 @@
       <button onclick="testSet2()">Test `set` create</button>
       <button onclick="testUpdate()">Test `update`</button>
       <button onclick="testPush()">Test `push`</button>
+      <button onclick="testRemove()">Test `remove`</button>
     </div>
     <script>
       const config = {
@@ -96,6 +97,16 @@
           })
           .catch(error => {
             console.log('-----push onComplete error-----')
+            console.error(error)
+          })
+      }
+      const testRemove = () => {
+        app.database().ref('comments/5a738755abe741e61a6295c5').remove()
+          .then(() => {
+            console.log('-----remove onComplete success----')
+          })
+          .catch(error => {
+            console.log('-----remove onComplete error-----')
             console.error(error)
           })
       }

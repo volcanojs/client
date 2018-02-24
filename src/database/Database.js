@@ -3,6 +3,7 @@ import once from './once'
 import set from './set'
 import update from './update'
 import push from './push'
+import remove from './remove'
 
 class Database {
   constructor ({ socket, serverURL, bucketName }) {
@@ -36,6 +37,7 @@ class Database {
     this.set = set.bind(this)
     this.update = update.bind(this)
     this.push = push.bind(this)
+    this.remove = remove.bind(this)
   }
 
   ref (ref) {
