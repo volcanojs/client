@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Volcano Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" media="screen" href="./static/css/normalize.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="./static/css/skeleton.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="./static/css/main.css" />
+  <script src="../dist/volcano-client.js"></script>
+</head>
+<body>
+  <header>
+    <img class="logo" src="https://avatars0.githubusercontent.com/u/35974038?s=200&v=4" />
+    <span class="title">Volcano Chat</span>
+  </header>
+  <main id="app">
+    <aside></aside>
+    <section>
+      <section class="chats">
+        <div class="message" v-for="message in messages" :key="message.id">
+          <img :src="message.photoURL" :class="{ 'no-photo': !message.photoURL }"/>
+          <div>
+            <div><span class="meta">{{message.username}}</span> <span class="datetime">{{(new Date(message.createdAt)).toString()}}</span></div>
+            <div class="content">{{message.content}}</div>
+          </div>
+        </div>
+      </section>
+      <section class="info">
+        <div>
+          <label for="username">Username:</label>
+          <input id="username" type="text" placeholder="Username" v-model="username"/>
+        </div>
+        <div class="photo-url">
+          <label for="photo-url">Photo URL: </label>
+          <div>
+            <input id="photo-url" type="text" placeholder="Photo URL" v-model="photoURL"/>
+            <img class="photo" :src="photoURL" v-show="photoURL"/>
+          </div>
+        </div>
+      </section>
+      <section class="input">
+        <input type="text" v-model="message"/>
+        <button class="button-primary" @click="send" :disabled="!message.trim()">Send</button>
+      </section>
+    </section>
+  </main>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="./static/js/main.js"></script>
+</body>
+</html>
